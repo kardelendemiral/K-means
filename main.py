@@ -6,9 +6,27 @@ import pandas as pd
 import numpy as np
 from pylab import cm
 
-colours = [ "b", "g", "r", "c", "m", "y", "k", "w"]
+colours = ["b", "g", "r", "c", "m", "y", "k", "w"]
+colors = ['blue', 'red', 'green', 'yellow', 'purple', 'darkblue', 'pink', 'orange']
 
-MAX_ITERATIONS = 5
+MAX_ITERATIONS = 10
+Js = []
+
+def getJ(df, centroidsX, centroidsY):
+
+    J = 0
+
+    for i in range(len(list(df['x']))):
+        xval = df['x'][i]
+        yval = df['y'][i]
+        cluster = df['c'][i]
+
+        cx = centroidsX[cluster]
+        cy = centroidsY[cluster]
+
+        J = J + getDistance(cx, cy, xval, yval)
+
+    return J
 
 def getDistance(x1, y1, x2, y2):
     return (x1-x2)**2 + (y1-y2)**2
@@ -30,8 +48,8 @@ def generateData(k, size):
     y = []
 
     for cluster in range(k):
-        meanX = np.random.uniform(0, 200)
-        meanY = np.random.uniform(0, 200)
+        meanX = np.random.uniform(0, 70)
+        meanY = np.random.uniform(0, 70)
         sigma = np.random.uniform(3, 8)
         x.extend(np.random.normal(meanX, sigma, size))
         y.extend(np.random.normal(meanY, sigma, size))
@@ -69,7 +87,7 @@ def kMeans(df, k):
                 minDist = dist
 
         cluster = "cluster" + str(selectedCluster)
-        newC.append(cluster)
+        newC.append(selectedCluster)
         plt.plot(xval, yval, colours[selectedCluster]+".", markersize=1)
 
     df['c'] = newC
@@ -82,8 +100,9 @@ def kMeans(df, k):
    # plt.legend()
     plt.show()
 
+    Js.append(getJ(df, centroidsX, centroidsY))
     new_centroids = pd.DataFrame(df).groupby(by='c').mean().values
-    print(len(new_centroids))
+    #print(len(new_centroids))
     centroidsX = []
     centroidsY = []
 
@@ -111,7 +130,7 @@ def kMeans(df, k):
                     minDist = dist
 
             cluster = "cluster" + str(selectedCluster)
-            newC.append(cluster)
+            newC.append(selectedCluster)
             plt.plot(xval, yval, colours[selectedCluster] + ".", markersize=1)
 
         df['c'] = newC
@@ -124,6 +143,7 @@ def kMeans(df, k):
         # plt.legend()
         plt.show()
 
+        Js.append(getJ(df, centroidsX, centroidsY))
         new_centroids = pd.DataFrame(df).groupby(by='c').mean().values
         centroidsX = []
         centroidsY = []
@@ -133,10 +153,14 @@ def kMeans(df, k):
             centroidsY.append(new_centroids[i][1])
 
 
-k = 3
+k = 4
 
 df = generateData(k, 1000)
 kMeans(df, k)
+
+plt.clf()
+plt.plot(range(MAX_ITERATIONS+1), Js)
+plt.show()
 
 #plt.scatter(x, y, alpha = 0.6, s=10)
 #plt.show()
