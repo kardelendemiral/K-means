@@ -6,9 +6,9 @@ import pandas as pd
 import numpy as np
 from pylab import cm
 
-colours = [ "#87CEFA", "#EE4000", "#BCEE68", "#B23AEE", "#EE1289", "#FFD700", "#EEE0E5", "#8B5F65"]
+colours = [ "b", "g", "r", "c", "m", "y", "k", "w"]
 
-MAX_ITERATIONS = 100000
+MAX_ITERATIONS = 5
 
 def getDistance(x1, y1, x2, y2):
     return (x1-x2)**2 + (y1-y2)**2
@@ -16,8 +16,13 @@ def getDistance(x1, y1, x2, y2):
 def getRandomCentroids(df, k):
     x = df['x']
     y = df['y']
-    selectedX = random.sample(sorted(x), k)
-    selectedY = random.sample(sorted(y), k)
+    selectedX = random.sample(list(x), k)
+    selectedY = random.sample(list(y), k)
+
+    """for i in range(k):
+        print(selectedX[i] in list(x))
+        print(selectedY[i] in list(y))"""
+
     return selectedX, selectedY
 
 def generateData(k, size):
@@ -27,12 +32,15 @@ def generateData(k, size):
     for cluster in range(k):
         meanX = np.random.uniform(0, 200)
         meanY = np.random.uniform(0, 200)
-        sigma = np.random.uniform(0, 10)
+        sigma = np.random.uniform(3, 8)
         x.extend(np.random.normal(meanX, sigma, size))
         y.extend(np.random.normal(meanY, sigma, size))
 
     c = [None]*size*k
     df = pd.DataFrame({'c': c, 'x': x, 'y': y})
+    #plt.scatter(x, y)
+    #plt.show()
+    #plt.clf()
     return df
 
 def kMeans(df, k):
@@ -43,20 +51,18 @@ def kMeans(df, k):
     newC = []
 
     centroidsX, centroidsY = getRandomCentroids(df, k)
-    for i in range(k):
-        cluster = "cluster" + str(i)
-        plt.plot(centroidsX[i], centroidsY[i], '.', label=cluster, alpha=0.5)
 
-    plt.show()
 
     for i in range(len(x)):
         xval = df['x'][i]
         yval = df['y'][i]
+
         minDist = 100000
         selectedCluster = -1
         for j in range(k):
             cx = centroidsX[j]
             cy = centroidsY[j]
+
             dist = getDistance(cx, cy, xval, yval)
             if dist < minDist:
                 selectedCluster = j
@@ -64,15 +70,67 @@ def kMeans(df, k):
 
         cluster = "cluster" + str(selectedCluster)
         newC.append(cluster)
-        plt.scatter(xval, yval, color = colours[selectedCluster])
+        plt.plot(xval, yval, colours[selectedCluster]+".", markersize=1)
 
     df['c'] = newC
+
+    for i in range(k):
+        cluster = "cluster" + str(i)
+        plt.plot(centroidsX[i], centroidsY[i], "k.", markersize=10)
+
    # plt.plot(x, y, '.', label=list(df['c']), alpha=0.5)
    # plt.legend()
     plt.show()
 
+    new_centroids = pd.DataFrame(df).groupby(by='c').mean().values
+    print(len(new_centroids))
+    centroidsX = []
+    centroidsY = []
+
+    for i in range(k):
+        centroidsX.append(new_centroids[i][0])
+        centroidsY.append(new_centroids[i][1])
 
 
+    for i in range(MAX_ITERATIONS):
+        newC = []
+
+        for i in range(len(x)):
+            xval = df['x'][i]
+            yval = df['y'][i]
+
+            minDist = 100000
+            selectedCluster = -1
+            for j in range(k):
+                cx = centroidsX[j]
+                cy = centroidsY[j]
+
+                dist = getDistance(cx, cy, xval, yval)
+                if dist < minDist:
+                    selectedCluster = j
+                    minDist = dist
+
+            cluster = "cluster" + str(selectedCluster)
+            newC.append(cluster)
+            plt.plot(xval, yval, colours[selectedCluster] + ".", markersize=1)
+
+        df['c'] = newC
+
+        for i in range(k):
+            cluster = "cluster" + str(i)
+            plt.plot(centroidsX[i], centroidsY[i], "k.", markersize=10)
+
+        # plt.plot(x, y, '.', label=list(df['c']), alpha=0.5)
+        # plt.legend()
+        plt.show()
+
+        new_centroids = pd.DataFrame(df).groupby(by='c').mean().values
+        centroidsX = []
+        centroidsY = []
+
+        for i in range(k):
+            centroidsX.append(new_centroids[i][0])
+            centroidsY.append(new_centroids[i][1])
 
 
 k = 3
