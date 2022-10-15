@@ -5,12 +5,27 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from pylab import cm
+from sklearn.cluster import KMeans
 
 colours = ["b", "g", "r", "c", "m", "y", "k", "w"]
 colors = ['blue', 'red', 'green', 'yellow', 'purple', 'darkblue', 'pink', 'orange']
 
 MAX_ITERATIONS = 10
 Js = []
+
+def calculateWCSS(df, k):
+    centroidsX, centroidsY = kMeans(df, k)
+    return getJ(df, centroidsX, centroidsY)
+
+def elbowMethod(df):
+    plt.clf()
+    w = []
+    for k in range(1,6):
+        w.append(calculateWCSS(df,k))
+
+    plt.plot(range(1,6), w)
+    plt.show()
+    plt.clf()
 
 def getJ(df, centroidsX, centroidsY):
 
@@ -152,6 +167,8 @@ def kMeans(df, k):
             centroidsX.append(new_centroids[i][0])
             centroidsY.append(new_centroids[i][1])
 
+    return centroidsX, centroidsY
+
 
 k = 4
 
@@ -161,6 +178,10 @@ kMeans(df, k)
 plt.clf()
 plt.plot(range(MAX_ITERATIONS+1), Js)
 plt.show()
+
+#elbowMethod(df)
+
+
 
 #plt.scatter(x, y, alpha = 0.6, s=10)
 #plt.show()
