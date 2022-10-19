@@ -18,11 +18,11 @@ def calculateWCSS(df, k):
     return getJ(df, centroidsX, centroidsY)
 
 def elbowMethod(df):
-    plt.clf()
     w = []
     for k in range(1,9):
         w.append(calculateWCSS(df,k))
 
+    plt.clf()
     plt.plot(range(1,9), w)
     plt.show()
     plt.clf()
@@ -66,7 +66,7 @@ def generateDifficultData(k, size):
     startingPosY = []
 
     for i in range(k):
-        weights.append(random.randrange(5,20))
+        weights.append(random.randrange(1,3))
         heights.append(random.randrange(10,50))
         startingPosY.append(random.randrange(0,30))
 
@@ -76,7 +76,7 @@ def generateDifficultData(k, size):
         if i == 0:
             startingPosX.append(1)
         else:
-            startingPosX.append(weights[i - 1] + 5)
+            startingPosX.append(weights[i - 1] + 3)
 
     x = []
     y = []
@@ -86,7 +86,7 @@ def generateDifficultData(k, size):
             y.append(startingPosY[i] + j)
             x.append(startingPosX[i] + random.randrange(0, weights[i]) + random.random())
 
-    c = [None]*len(x)
+    c = ["cluster 0"]*len(x)
     df = pd.DataFrame({'c': c,'x': x, 'y': y})
     return df
 
@@ -140,7 +140,6 @@ def kMeans(df, k):
         cluster = "cluster" + str(i)
         plt.plot(centroidsX[i], centroidsY[i], "k.", markersize=10)
 
-   # plt.plot(x, y, '.', label=list(df['c']), alpha=0.5)
     plt.title("Iteration 1")
     plt.show()
 
@@ -182,7 +181,6 @@ def kMeans(df, k):
             cluster = "cluster" + str(i)
             plt.plot(centroidsX[i], centroidsY[i], "k.", markersize=10)
 
-        # plt.plot(x, y, '.', label=list(df['c']), alpha=0.5)
         plt.show()
 
         Js.append(getJ(df, centroidsX, centroidsY))
@@ -197,10 +195,9 @@ def kMeans(df, k):
     return centroidsX, centroidsY
 
 
-k = 3
+k = 4
 
 df = generateData(k, 1000)
-
 #df = generateDifficultData(k, 1000)
 
 plt.scatter(df['x'], df['y'], s=0.5)
